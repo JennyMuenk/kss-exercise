@@ -3,3 +3,5 @@ data/
 meta/
 node_modules/
 wal/
+.ipynb_checkpoints
+__pychache__/

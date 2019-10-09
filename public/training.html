@@ -13,7 +13,8 @@
 </head>
 <body class="alert alert-info">
 <div class="container">
-    <h4>Get Context:</h4>
+
+    <h3 id="act"></h3>
 
     <div class="row">
         <div class="col-sm">
@@ -28,17 +29,29 @@
                     <div class="col-sm btn-group" style="padding-bottom: 20px">
                         <button id="dropdown-button" type="button" class="btn btn-info dropdown-toggle"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Activity 1
+                            Resting
                         </button>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" id="action1">Activity 1</a>
-                            <a class="dropdown-item" id="action2">Activity 2</a>
-                            <a class="dropdown-item" id="action3">Activity 3</a>
+                            <a class="dropdown-item" id="action1">Resting</a>
+                            <a class="dropdown-item" id="action2">Walking</a>
+                            <a class="dropdown-item" id="action3">Jumping</a>
+                        </div>
+
+                    </div>
+                    <div class="col-sm btn-group" style="padding-bottom: 20px">
+                        <button id="dropdown-button-mode" type="button" class="btn btn-secondary dropdown-toggle"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Training
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" id="training">Training</a>
+                            <a class="dropdown-item" id="predicting">Predicting</a>
+                            <a class="dropdown-item" id="predicting2">Predicting on device</a>
                         </div>
                     </div>
                     <div class="custom-control custom-switch" style="width: 100%; padding-bottom: 20px">
-                        <input type="checkbox" class="custom-control-input" id="switch" style="position: relative; ">
-                        <label id="switch-label" class="custom-control-label" for="switch">Context diabled!</label>
+                        <input type="checkbox" class="custom-control-input" id="switch" style="position: relative;">
+                        <label id="switch-label" class="custom-control-label" for="switch">Not Recording</label>
                     </div>
                 </div>
 
@@ -52,7 +65,7 @@
         <div class="col-sm">
             <!-- inform user -->
             <div id="dm" style="color: gray"></div>
-            <div id="console" style="color: gray"></div>
+            <code id="console" style="color: gray"></code>
         </div>
     </div>
 </div>
@@ -63,31 +76,52 @@
     let batch = [];
     let lastInsert = Date.now();
     let lastSent;
-    let subject;
+    let subject = 'empty';
+    let mode = 'Training';
+
+    // counter so I collect only data for 30sec
+    let counter = 0;
+    let finished;
 
     // Action Labeling
     const dropdownButton = document.getElementById('dropdown-button');
+    const dropdownButtonMode = document.getElementById('dropdown-button-mode');
+    const actHeading = document.getElementById('act');
     let activity = dropdownButton.innerText;
 
     document.getElementById('action1').onclick = function () {
-        dropdownButton.innerText = 'Activity 1';
-        activity = 'Activity 1';
+        dropdownButton.innerText = 'Resting';
+        activity = 'Resting';
     };
 
     document.getElementById('action2').onclick = function () {
-        dropdownButton.innerText = 'Activity 2';
-        activity = 'Activity 2';
+        dropdownButton.innerText = 'Walking';
+        activity = 'Walking';
     };
 
     document.getElementById('action3').onclick = function () {
-        dropdownButton.innerText = 'Activity 3';
-        activity = 'Activity 3';
+        dropdownButton.innerText = 'Jumping';
+        activity = 'Jumping';
     };
 
     document.getElementById('subject-name').onchange = function () {
       subject = this.value;
     };
 
+    document.getElementById('training').onclick = function () {
+      dropdownButtonMode.innerText = 'Training';
+      mode = 'Training';
+    };
+
+    document.getElementById('predicting').onclick = function () {
+      dropdownButtonMode.innerText = 'Predicting';
+      mode = 'Predicting';
+    };
+
+    document.getElementById('predicting2').onclick = function () {
+      dropdownButtonMode.innerText = 'Predicting on device';
+      mode = 'Predicting on device';
+    };
 
     // get Console div, since we don't have console.log on device
     const cons = document.getElementById('console');
@@ -122,8 +156,8 @@
       }
 
       // show current motion
-      const motionDiv = document.getElementById('motion');
-      motionDiv.innerText = JSON.stringify(data, null, 2);
+      // const motionDiv = document.getElementById('motion');
+      // motionDiv.innerText = JSON.stringify(data, null, 2);
 
       // send data every second
       if((Date.now() - lastSent) > 1000) {
@@ -134,14 +168,72 @@
 
         // set lastSent to now
         lastSent = Date.now();
+        counter++;
 
         // 1.d) Use influent (https://github.com/gobwas/influent) to write the sensor data to the database within the event listener
         // (Tip: Use Batch and write asynchronously every second or so. You may already aggregate the results to 20 samples per seconds)
-        fetch('/influent', {method: 'POST',  headers: {'Content-Type': 'application/json'}, body: JSON.stringify(state)})
-          .then(() => {
-            cons.innerText += 'OK';
-          })
-          .catch((err) => console.log(err));
+        if(mode === 'Training' && counter < 30) {
+          fetch('/influent', {method: 'POST',  headers: {'Content-Type': 'application/json'}, body: JSON.stringify(state)})
+            .then(() => {
+              cons.innerText += 'OK';
+            })
+            .catch((err) => console.log(err));
+
+          // only gather 30sec of training data
+          if(counter >= 30 && !finished) {
+            cons.innerText += 'FINISHED';
+            finished = true;
+            document.getElementById('switch').checked = false;
+            window.removeEventListener('devicemotion', deviceMotionHandler);
+          }
+
+        } else if(mode === 'Predicting') {
+          fetch('/predict', {method: 'POST',  headers: {'Content-Type': 'application/json'}, body: JSON.stringify(state)})
+            .then((response) => {
+              if (response.status !== 200) {
+                return;
+              }
+
+              response.json().then(function(data) {
+                actHeading.innerText = data.data;
+              });
+
+            })
+            .catch((err) => console.log(err));
+        } else if (mode === 'Predicting on device') {
+
+
+            // Features:
+            let features = [];
+            let means = [0,0,0,0,0,0];
+            let variances = [0,0,0,0,0,0];
+
+            let columns = ['alpha', 'beta', 'gamma', 'x', 'y', 'z'];
+
+            state.data.forEach((measurement)=>{
+                columns.forEach((name, index) => {
+                  means[index] += measurement[name];
+                });
+            });
+
+            columns.forEach((name, index) => {
+                means[index] = means[index] / state.data.length;
+            });
+
+            // variances
+            state.data.forEach((measurement)=>{
+                columns.forEach((name, index) => {
+                  variances[index] += ((measurement[name] - means[index])**2) / state.data.length;
+                });
+            });
+
+            features = means.concat(variances);
+            cons.innerText = features.toString();
+
+            let pred = clf.predict(features);
+
+            actHeading.innerText = pred;
+        }
 
         // reset state & batch
         state = {};
@@ -160,7 +252,7 @@
         lastSent = Date.now();
 
         // Show that switch is enabled
-        label.innerText = 'Context enabled!';
+        label.innerText = 'Recording...';
 
         // inform user about supported device motion
         const div = document.getElementById('dm');
@@ -174,7 +266,7 @@
         }
 
       } else {
-        label.innerText = 'Context diabled!';
+        label.innerText = 'Not Recording';
         window.removeEventListener('devicemotion', deviceMotionHandler);
       }
 
@@ -186,5 +278,8 @@
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+<script src="classifier.js"></script>
+
 </body>
 </html>
