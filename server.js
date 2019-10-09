@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const influent = require('influent');
+const http = require('http');
 
 const app = express();
 const router = express.Router();
@@ -12,9 +13,8 @@ app.use(express.static('public'));
 
 router.post('/influent', (req, res) => {
   console.log(req.body);
-  console.log(req.body.data.length);
 
-  influent
+ influent
     .createHttpClient({
       server: [
         {
@@ -58,6 +58,49 @@ router.post('/influent', (req, res) => {
     });
 });
 
+router.post('/predict', (req, res) => {
+  console.log(req.body);
+
+  const data = JSON.stringify(req.body.data);
+
+  const options = {
+    hostname: '0.0.0.0',
+    port: 8080,
+    path: '/predict',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
+    }
+  };
+
+  const request = http.request(options, (resp) => {
+    console.log(`statusCode: ${resp.statusCode}`);
+    let data = '';
+
+    // A chunk of data has been recieved.
+    resp.on('data', (chunk) => {
+      data += chunk;
+    });
+
+    // The whole response has been received. Print out the result.
+    resp.on('end', () => {
+      console.log(data);
+      res.status(200);
+      res.json({ data: data});
+      return res;
+    });
+  });
+
+  request.on('error', (error) => {
+    console.error(error)
+  });
+
+  request.write(data);
+  request.end();
+
+});
+
 router.get('/influent', (req, res) => {
   influent
     .createHttpClient({
@@ -76,7 +119,6 @@ router.get('/influent', (req, res) => {
     .then((client) => {
       client
         .query('select * from "motion"')
-        //.query('show SERIES from "motion"')
         .then((result) => {
           console.log(result);
           res.status(200);

@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "author": "Jennifer Münk",
-  "license": "",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
     "influent": "^0.5.2"

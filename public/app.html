@@ -53,19 +53,15 @@
     }
 </style>
 
-<iframe src="" height="400" id="frame">Wikipedia Encyclopedia</iframe>
+<iframe src="" height="400" id="frame"></iframe>
 
 
 <script>
 
   function loadPage(e){
-    let url = document.getElementById('url').value;
-    document.getElementById('frame').src = url;
+    document.getElementById('frame').src = document.getElementById('url').value;;
   }
-
   button.onclick = loadPage;
-
-
 
 </script>
 
@@ -77,12 +73,10 @@
   let batch = [];
   let lastInsert = Date.now();
   let lastSent;
-  let subject = 'empty';
-  let mode = 'Predict on device';
 
   // counter so I collect only data for 30sec
   let counter = 0;
-  let finished;
+  const motionDiv = document.getElementById('motion');
 
   function deviceMotionHandler(motion) {
     // collect data
@@ -126,19 +120,17 @@
      if (true) {
 
         // Features:
-        let features = [];
         let means = [0,0,0,0,0,0];
         let variances = [0,0,0,0,0,0];
 
         let columns = ['alpha', 'beta', 'gamma', 'x', 'y', 'z'];
-
-
 
         state.data.forEach((measurement)=>{
           columns.forEach((name, index) => {
             means[index] += measurement[name];
           });
         });
+
 
         columns.forEach((name, index) => {
           means[index] = means[index] / state.data.length;
@@ -151,12 +143,12 @@
           });
         });
 
-        features = means.concat(variances);
-
+        let features = means.concat(variances).filter((x,idx) => [0,6,10].includes(idx));
+       // let features = [means[0], variances[0], variances[4]];
         let pred = clf.predict(features);
+        motionDiv.innerText = pred;
 
-       const motionDiv = document.getElementById('motion');
-       motionDiv.innerText = pred
+      // motionDiv.innerText = pred;
 
         if (pred === "Resting") {
           document.getElementById("frame").className = 'iframe_normal';
@@ -173,9 +165,11 @@
     }
   }
 
-  window.addEventListener("DOMContentLoaded", ()=>{
+  window.addEventListener("DOMContentLoaded", () => {
     lastSent = Date.now();
-    console.log("ready")
+
+    // Prediction:
+    // clf = new SVC(3, 3, vectors, coefficients, intercepts, weights, "linear", "auto", 0.0, 3);
 
     window.addEventListener('devicemotion', deviceMotionHandler);
   });
