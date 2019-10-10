@@ -1,20 +1,19 @@
 # Context sensitive Systems Lecture - Exercise
 This is the exercise for the Context sensitive systems Lecture at Karlsruher Institute for Technology.
 
-         
-    ├── data-analysis                        
-    │   ├── feature_engineering.ipynb   <- 
-    │   ├── ps2js.ipynb                 <- 
-    │   └── feature_visualization.ipynb <- 
     │
-    ├── src                                
-    │   ├── model_server.py             <- 
-    │   ├── model.py                    <- 
+    ├── public                                
+    │   ├── app.html                    <- app that uses context
+    │   ├── training.html               <- collect context data
     │   └── classifier.js               <- model imported from python to javascript   
     │   
     ├── .gitignore 
     ├── data.csv           <- dump of the data used for training
+    ├── exercises.ipynb    <- exercises 1 - 7 
+    ├── packages.json     
+    ├── packages-lock.json 
     ├── README.md 
+    ├── requirements.txt   <- requirements for jupyter
     └── server.js          <- node server
 
 --------

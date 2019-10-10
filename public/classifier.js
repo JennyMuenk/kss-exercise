@@ -1,7 +1,7 @@
 var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree) {
 
     this.nClasses = nClasses;
-    this.classes = ['Resting', 'Walking', 'Jumping'];
+    this.classes = ['Jumping', 'Walking', 'Resting'];
     this.nRows = nRows;
     this.vectors = vectors;
     this.coefficients = coefficients;
@@ -13,7 +13,7 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
     this.degree = degree;
 
     this.predict = function(features) {
-
+    
         var kernels = new Array(vectors.length);
         var kernel;
         switch (this.kernel) {
@@ -58,7 +58,7 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
                 }
                 break;
         }
-
+    
         var starts = new Array(this.nRows);
         for (var i = 0; i < this.nRows; i++) {
             if (i != 0) {
@@ -71,18 +71,18 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
                 starts[0] = 0;
             }
         }
-
+    
         var ends = new Array(this.nRows);
         for (var i = 0; i < this.nRows; i++) {
             ends[i] = this.weights[i] + starts[i];
         }
-
+    
         if (this.nClasses == 2) {
-
+    
             for (var i = 0; i < kernels.length; i++) {
                 kernels[i] = -kernels[i];
             }
-
+    
             var decision = 0.;
             for (var k = starts[1]; k < ends[1]; k++) {
                 decision += kernels[k] * this.coefficients[0][k];
@@ -91,14 +91,14 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
                 decision += kernels[k] * this.coefficients[0][k];
             }
             decision += this.intercepts[0];
-
+    
             if (decision > 0) {
                 return 0;
             }
             return 1;
-
+    
         }
-
+    
         var decisions = new Array(this.intercepts.length);
         for (var i = 0, d = 0, l = this.nRows; i < l; i++) {
             for (var j = i + 1; j < l; j++) {
@@ -113,7 +113,7 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
                 d++;
             }
         }
-
+    
         var votes = new Array(this.intercepts.length);
         for (var i = 0, d = 0, l = this.nRows; i < l; i++) {
             for (var j = i + 1; j < l; j++) {
@@ -121,12 +121,12 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
                 d++;
             }
         }
-
+    
         var amounts = new Array(this.nClasses).fill(0);
         for (var i = 0, l = votes.length; i < l; i++) {
             amounts[votes[i]] += 1;
         }
-
+    
         var classVal = -1, classIdx = -1;
         for (var i = 0, l = amounts.length; i < l; i++) {
             if (amounts[i] > classVal) {
@@ -135,7 +135,7 @@ var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, 
             }
         }
         return this.classes[classIdx];
-
+    
     }
 
 };
@@ -147,10 +147,10 @@ if (true) {
         var features = [0,0,0];
 
         // Parameters:
-        var vectors = [[-0.6387374252080917, 3.0622507280324416, 0.05739160522052543], [29.953560733795165, 12063.132436483076, 14.15776917720928], [4.931549525260925, 40.085794202482745, 0.2081499089202481], [-121.03178215026855, 1914.869586349569, 1.6075809576415636], [10.752444553375245, 8538.880602006786, 31.43796606102885], [25.507795077934862, 3843.0700593015413, 89.31988925090695], [29.81000590324402, 14691.742653438203, 3.208771236576665]];
-        var coefficients = [[0.0014267435903233198, -0.0, -0.0014267435903233198, -0.0, -0.0, -1.3555359977496336e-07, -0.0], [1.3555359977496336e-07, 0.12460178797977506, 0.0, 0.006856687100116333, -0.06746995099010004, -0.0, -0.0639885240897949]];
-        var intercepts = [1.1566936411117874, 1.0015924143620363, 40.81029743462273];
-        var weights = [1, 3, 3];
+        var vectors = [[0.08838808536529541, 5740.572678865149, 30.766142631554832], [-19.423746073246, 15239.485859499626, 6.374608115156644], [12.227634400874376, 10811.544452462145, 13.57745301817697], [2.615536257624626, 3843.0700593015413, 130.66361796547054], [-7.205116865038872, 9977.893619598719, 7.0733536140911255], [3.5664734870195387, 40.085794202482745, 0.9562156315686405], [-1.587270355038345, 3.0622507280324416, 0.267057386386216]];
+        var coefficients = [[0.006451085279989141, 0.0048591284111716496, 0.0021220563777031654, 0.0, -0.013432270068863937, -0.0, -1.3547675057645985e-07], [0.0, 0.0, 0.0, 1.3547675057645985e-07, 0.0, 0.0014308415538899532, -0.0014308415538899532]];
+        var intercepts = [-6.8250957528521266, -1.001596892456539, -1.1507807034225115];
+        var weights = [4, 2, 1];
 
         // Prediction:
         var clf = new SVC(3, 3, vectors, coefficients, intercepts, weights, "linear", "auto_deprecated", 0.0, 3);

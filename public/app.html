@@ -148,8 +148,6 @@
         let pred = clf.predict(features);
         motionDiv.innerText = pred;
 
-      // motionDiv.innerText = pred;
-
         if (pred === "Resting") {
           document.getElementById("frame").className = 'iframe_normal';
         } else if (pred === "Walking") {
