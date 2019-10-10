@@ -1,6 +1,7 @@
 # Context sensitive Systems Lecture - Exercise
 This is the exercise for the Context sensitive systems Lecture at Karlsruher Institute for Technology.
-You can find the application <a href="">https://jennymuenk.github.io/kss-exercise/</a>. Please use your smartphone!
+You can find the application here: https://jennymuenk.github.io/kss-exercise.
+Please use your smartphone!
 
     │
     ├── public                                

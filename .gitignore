@@ -4,4 +4,4 @@ meta/
 node_modules/
 wal/
 .ipynb_checkpoints
-__pychache__/
+__pycache__/
