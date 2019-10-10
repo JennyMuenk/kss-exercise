@@ -39,7 +39,7 @@ jupyter notebook
 
 Start Python server:
 ```
-python3 src/model_server.py
+python3 model_server/model_server.py
 ```
 
 ## InfluxDB 
