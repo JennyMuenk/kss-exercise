@@ -78,30 +78,31 @@
     let lastSent;
     let subject = 'empty';
     let mode = 'Training';
-
-    // counter so I collect only data for 30sec
+    let actions = ['Resting', 'Walking', 'Jumping'];
     let counter = 0;
     let finished;
 
-    // Action Labeling
+    // divs
     const dropdownButton = document.getElementById('dropdown-button');
     const dropdownButtonMode = document.getElementById('dropdown-button-mode');
+
+    // Action Labeling
     const actHeading = document.getElementById('act');
     let activity = dropdownButton.innerText;
 
     document.getElementById('action1').onclick = function () {
-        dropdownButton.innerText = 'Resting';
-        activity = 'Resting';
+        dropdownButton.innerText = actions[0];
+        activity = actions[0];
     };
 
     document.getElementById('action2').onclick = function () {
-        dropdownButton.innerText = 'Walking';
-        activity = 'Walking';
+        dropdownButton.innerText = actions[1];
+        activity = actions[1];
     };
 
     document.getElementById('action3').onclick = function () {
-        dropdownButton.innerText = 'Jumping';
-        activity = 'Jumping';
+        dropdownButton.innerText = actions[2];
+        activity = actions[2];
     };
 
     document.getElementById('subject-name').onchange = function () {
@@ -154,10 +155,6 @@
         // print data
         console.log('batch:', batch);
       }
-
-      // show current motion
-      // const motionDiv = document.getElementById('motion');
-      // motionDiv.innerText = JSON.stringify(data, null, 2);
 
       // send data every second
       if((Date.now() - lastSent) > 1000) {
@@ -227,12 +224,12 @@
                 });
             });
 
+            // concat feature vector
             features = means.concat(variances);
             cons.innerText = features.toString();
 
-            let pred = clf.predict(features);
-
-            actHeading.innerText = pred;
+            // set prediction in html
+            actHeading.innerText = clf.predict(features);
         }
 
         // reset state & batch
