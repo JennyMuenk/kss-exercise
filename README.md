@@ -3,7 +3,7 @@ This is the exercise for the Context sensitive systems Lecture at Karlsruher Ins
 
     │
     ├── public                                
-    │   ├── app.html                    <- app that uses context
+    │   ├── index.html                    <- app that uses context
     │   ├── training.html               <- collect context data
     │   └── classifier.js               <- model imported from python to javascript   
     │   
